@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: weather-backend
+    runtime: python
+    buildCommand: pip install poetry && poetry install
+    startCommand: poetry run uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: POETRY_VIRTUALENVS_CREATE
+        value: "false"

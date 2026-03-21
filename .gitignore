@@ -50,7 +50,3 @@ dist/
 *.png
 *.pdf
 *.jpg
-
-# Render configs
-render.yaml
-backend/render.yaml
