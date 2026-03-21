@@ -2,9 +2,10 @@ from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
 from datetime import datetime, timedelta
 from typing import Optional
-from data_fetcher import (
-    get_outside_data, get_indoor_data, get_latest, fetch_all_data, clear_cache
-)
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 app = FastAPI(title="Weather API")
 
@@ -16,6 +17,30 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+from data_fetcher import (
+    get_outside_data, get_indoor_data, get_latest, fetch_all_data, clear_cache
+)
+
+
+@app.on_event("startup")
+async def startup():
+    logger.info("Starting up, fetching initial data...")
+    try:
+        fetch_all_data()
+        logger.info("Data fetch successful")
+    except Exception as e:
+        logger.error(f"Data fetch failed: {e}")
+
+
+@app.get("/api/health")
+def health_check():
+    return {"status": "ok"}
+
+
+@app.get("/")
+def root():
+    return {"message": "Weather API", "docs": "/docs"}
+
 
 @app.get("/api/outside")
 def get_outside(
@@ -23,7 +48,11 @@ def get_outside(
     start_date: Optional[str] = Query(None, description="Start date (YYYY-MM-DD)"),
     end_date: Optional[str] = Query(None, description="End date (YYYY-MM-DD)")
 ):
-    df = get_outside_data(days=days)
+    try:
+        df = get_outside_data(days=days)
+    except Exception as e:
+        logger.error(f"Error fetching outside data: {e}")
+        return {"data": [], "count": 0, "error": str(e)}
 
     if start_date:
         df = df[df["datetime"] >= datetime.fromisoformat(start_date)]
