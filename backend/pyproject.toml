@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "weather-backend"
+version = "0.1.0"
+description = "Weather API Backend"
+authors = ["stratos"]
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "^3.9"
+fastapi = "^0.109.0"
+uvicorn = "^0.27.0"
+pandas = "^2.2.0"
+numpy = "^1.26.0"
+python-multipart = "^0.0.6"
+requests = "^2.31.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
