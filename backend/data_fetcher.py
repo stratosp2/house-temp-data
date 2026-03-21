@@ -162,7 +162,13 @@ def fetch_all_data():
     print("Fetching data...")
     data = fetch_from_sheets()
     
-    if not data or not any(data.values()):
+    has_data = False
+    for key, df in data.items():
+        if df is not None and len(df) > 0:
+            has_data = True
+            break
+    
+    if not has_data:
         print("Google Sheets fetch failed, trying local files...")
         data = fetch_from_local()
 
