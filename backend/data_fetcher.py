@@ -46,6 +46,9 @@ def process_outside_data(df):
     df = df.sort_values("datetime")
     df = df.drop_duplicates(subset=["datetime"])
     df = df.replace({float('nan'): None})
+    
+    keep_cols = ["datetime", "temperature", "humidity", "pressure", "rain_sensor", "wind", "voltage"]
+    df = df[[c for c in keep_cols if c in df.columns]]
     return df
 
 
