@@ -1,17 +1,9 @@
 services:
   - type: web
     name: weather-frontend
-    runtime: static
-    buildCommand: npm install && npm run build
-    staticPublishPath: frontend/.next
-    headers:
-      - path: /*
-        name: Cache-Control
-        value: public, max-age=0, must-revalidate
-    routes:
-      - type: rewrite
-        source: /api/{*rest}
-        destination: https://weather-backend.onrender.com/{rest}
+    runtime: node
+    buildCommand: cd frontend && npm install && npm run build
+    startCommand: cd frontend && npm start -- -p $PORT
     envVars:
       - key: NEXT_PUBLIC_API_URL
-        value: https://weather-backend.onrender.com
+        value: https://house-temp-data.onrender.com
