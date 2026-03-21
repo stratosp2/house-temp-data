@@ -10,7 +10,7 @@ GOOGLE_SHEETS = {
     "living": "https://docs.google.com/spreadsheets/d/1FkOtIjSY1NgbXuDY9OC9g6mjoBLi9kD6B1cy3UgU7CQ/gviz/tq?tqx=out:csv&sheet=Living room kitchen data"
 }
 
-CACHE_DURATION = 300
+CACHE_DURATION = 3600
 
 _cache = {"data": None, "timestamp": 0}
 
