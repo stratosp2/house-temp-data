@@ -156,6 +156,15 @@ export default function Dashboard() {
 
   chartData.sort((a: any, b: any) => a.datetime - b.datetime);
 
+  const pressureData = data.filter(d => d.pressure != null).map(d => d.pressure);
+  const voltageData = data.filter(d => d.voltage != null).map(d => d.voltage);
+  const pressureDomain: [number, number] = pressureData.length > 0
+    ? [Math.min(...pressureData), Math.max(...pressureData)]
+    : [750, 1050];
+  const voltageDomain: [number, number] = voltageData.length > 0
+    ? [Math.min(...voltageData), Math.max(...voltageData)]
+    : [2.5, 5];
+
   if (loading) {
     return (
       <div className="loading-container">
@@ -365,7 +374,7 @@ export default function Dashboard() {
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
                 <XAxis dataKey="datetime" tickFormatter={days <= 1 ? formatTime : formatShortDate} stroke="#64748b" fontSize={11} angle={-45} textAnchor="end" height={60} />
-                <YAxis stroke="#64748b" fontSize={12} unit=" hPa" />
+                <YAxis stroke="#64748b" fontSize={12} unit=" hPa" domain={pressureDomain} />
                 <Tooltip 
                   labelFormatter={(value) => format(new Date(value), 'MMM dd, HH:mm')}
                   formatter={(value: number) => value != null ? [`${value.toFixed(0)} hPa`, 'Pressure'] : ['--', 'Pressure']}
@@ -396,7 +405,7 @@ export default function Dashboard() {
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
                 <XAxis dataKey="datetime" tickFormatter={days <= 1 ? formatTime : formatShortDate} stroke="#64748b" fontSize={11} angle={-45} textAnchor="end" height={60} />
-                <YAxis stroke="#64748b" fontSize={12} unit="V" domain={[2.5, 5]} />
+                <YAxis stroke="#64748b" fontSize={12} unit="V" domain={voltageDomain} />
                 <Tooltip 
                   labelFormatter={(value) => format(new Date(value), 'MMM dd, HH:mm')}
                   formatter={(value: number) => value != null && value > 0 ? [`${value.toFixed(2)}V`, 'Voltage'] : ['--', 'Voltage']}
