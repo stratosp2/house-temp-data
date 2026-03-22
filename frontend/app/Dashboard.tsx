@@ -103,6 +103,8 @@ export default function Dashboard() {
       }
     } catch (error) {
       console.error('Failed to load data:', error);
+      setData([]);
+      setStats(null);
     }
     setLoading(false);
   }
