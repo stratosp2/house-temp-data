@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { fetchStats, fetchOutsideData, fetchIndoorData, fetchIndoorStats } from '@/lib/api';
+import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { ComposedChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, Legend, AreaChart } from 'recharts';
 import { format } from 'date-fns';
 
@@ -26,6 +26,14 @@ interface IndoorStats {
   };
   living_room?: { temp: { min: number | null; max: number | null; mean: number | null; current: number | null } };
   kitchen?: { temp: { min: number | null; max: number | null; mean: number | null; current: number | null } };
+}
+
+interface InitialData {
+  data: WeatherData[];
+  dateRange?: { end?: string };
+  stats: Stats | null;
+  indoorData: any[];
+  indoorStats: IndoorStats | null;
 }
 
 const StatCard = ({ title, value, unit, min, max, avg, color, icon, lastUpdate }: {
@@ -65,47 +73,14 @@ const StatCard = ({ title, value, unit, min, max, avg, color, icon, lastUpdate }
   </div>
 );
 
-export default function Dashboard() {
-  const [data, setData] = useState<WeatherData[]>([]);
-  const [indoorData, setIndoorData] = useState<any[]>([]);
-  const [stats, setStats] = useState<Stats | null>(null);
-  const [indoorStats, setIndoorStats] = useState<IndoorStats | null>(null);
-  const [loading, setLoading] = useState(true);
+export default function Dashboard({ initialData }: { initialData: InitialData }) {
+  const router = useRouter();
+  const [data] = useState<WeatherData[]>(initialData.data);
+  const [indoorData] = useState<any[]>(initialData.indoorData);
+  const [stats] = useState<Stats | null>(initialData.stats);
+  const [indoorStats] = useState<IndoorStats | null>(initialData.indoorStats);
   const [days, setDays] = useState(7);
-  const [lastUpdated, setLastUpdated] = useState<string | null>(null);
-
-  useEffect(() => {
-    loadData();
-  }, [days]);
-
-  async function loadData() {
-    setLoading(true);
-    try {
-      const [dataRes, statsRes, indoorRes, indoorStatsRes] = await Promise.all([
-        fetchOutsideData(days),
-        fetchStats(days),
-        fetchIndoorData(days),
-        fetchIndoorStats(days)
-      ]);
-      
-      if (dataRes.data) {
-        setData(dataRes.data);
-        setLastUpdated(dataRes.date_range?.end || null);
-      }
-      if (statsRes.temperature) {
-        setStats(statsRes);
-      }
-      if (indoorStatsRes) {
-        setIndoorStats(indoorStatsRes);
-      }
-      if (indoorRes && !indoorRes.error && indoorRes.data && indoorRes.data.length > 0) {
-        setIndoorData(indoorRes.data);
-      }
-    } catch (error) {
-      console.error('Failed to load data:', error);
-    }
-    setLoading(false);
-  }
+  const lastUpdated = initialData.dateRange?.end || null;
 
   function formatDateTime(value: any) {
     try {
@@ -156,23 +131,14 @@ export default function Dashboard() {
 
   chartData.sort((a: any, b: any) => a.datetime - b.datetime);
 
-  const pressureData = data.filter(d => d.pressure != null).map(d => d.pressure);
-  const voltageData = data.filter(d => d.voltage != null).map(d => d.voltage);
+  const pressureData = data.filter(d => d.pressure != null).map(d => d.pressure as number);
+  const voltageData = data.filter((d): d is WeatherData & { voltage: number } => d.voltage != null).map(d => d.voltage);
   const pressureDomain: [number, number] = pressureData.length > 0
     ? [Math.min(...pressureData), Math.max(...pressureData)]
     : [750, 1050];
   const voltageDomain: [number, number] = voltageData.length > 0
     ? [Math.min(...voltageData), Math.max(...voltageData)]
     : [2.5, 5];
-
-  if (loading) {
-    return (
-      <div className="loading-container">
-        <div className="loading-spinner"></div>
-        <p>Loading weather data...</p>
-      </div>
-    );
-  }
 
   return (
     <div className="dashboard">
@@ -188,13 +154,13 @@ export default function Dashboard() {
           </span>
         </div>
         <div className="controls">
-          <select value={days} onChange={(e) => setDays(Number(e.target.value))} className="select-input">
+          <select value={days} onChange={(e) => router.push(`?days=${e.target.value}`)} className="select-input">
             <option value={1}>1 Day</option>
             <option value={7}>7 Days</option>
             <option value={14}>14 Days</option>
             <option value={30}>30 Days</option>
           </select>
-          <button onClick={() => loadData()} className="refresh-button">Refresh</button>
+          <button onClick={() => router.refresh()} className="refresh-button">Refresh</button>
         </div>
       </header>
 
